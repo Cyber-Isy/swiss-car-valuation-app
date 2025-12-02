@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx shadcn@latest init:*)",
+      "Bash(npx shadcn@latest add button input label card form select textarea badge table dialog dropdown-menu toast separator)",
+      "Bash(npm run build:*)",
+      "Bash(curl:*)",
+      "Bash(taskkill:*)",
+      "Bash(pkill:*)",
+      "Bash(npm run dev:*)",
+      "Bash(npx prisma db push)",
+      "Bash(findstr:*)",
+      "Bash(cat:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nSwissCarMarket MVP - Car valuation platform for Switzerland\n\nFeatures:\n- Multi-tier vehicle form with 12 fields across 3 tiers\n- AI-powered valuation using Perplexity API (Swiss marketplaces only)\n- 2-step search: exact matches, then similar vehicle fallback\n- Real-time progress indicator on success page\n- Admin dashboard with status management\n- Image upload to Supabase storage\n- NextAuth authentication for admin\n- Prisma with PostgreSQL database\n- German UI with formal language\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
