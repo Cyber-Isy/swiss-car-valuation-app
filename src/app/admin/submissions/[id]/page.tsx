@@ -259,7 +259,7 @@ export default function SubmissionDetailPage() {
   if (authStatus === "loading" || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-red-600" />
+        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
       </div>
     )
   }
@@ -285,7 +285,7 @@ export default function SubmissionDetailPage() {
               </Button>
             </Link>
             <div className="flex items-center gap-2">
-              <Car className="h-6 w-6 text-red-600" />
+              <Car className="h-6 w-6 text-blue-600" />
               <span className="font-bold">
                 {submission.brand} {submission.model}
               </span>
@@ -501,7 +501,7 @@ export default function SubmissionDetailPage() {
                     </div>
                     <div>
                       <p className="text-sm text-gray-500">Ankaufspreis (Empf.)</p>
-                      <p className="text-xl font-bold text-red-600">
+                      <p className="text-xl font-bold text-orange-600">
                         {formatPrice(submission.aiPurchasePrice)}
                       </p>
                     </div>
@@ -629,14 +629,14 @@ export default function SubmissionDetailPage() {
                 <div className="space-y-2">
                   <a
                     href={`mailto:${submission.sellerEmail}`}
-                    className="flex items-center gap-2 text-sm hover:text-red-600"
+                    className="flex items-center gap-2 text-sm hover:text-blue-600"
                   >
                     <Mail className="h-4 w-4" />
                     {submission.sellerEmail}
                   </a>
                   <a
                     href={`tel:${submission.sellerPhone}`}
-                    className="flex items-center gap-2 text-sm hover:text-red-600"
+                    className="flex items-center gap-2 text-sm hover:text-blue-600"
                   >
                     <Phone className="h-4 w-4" />
                     {submission.sellerPhone}
@@ -717,7 +717,7 @@ export default function SubmissionDetailPage() {
                 </div>
 
                 <Button
-                  className="w-full bg-red-600 hover:bg-red-700"
+                  className="w-full bg-orange-500 hover:bg-orange-600"
                   onClick={handleSave}
                   disabled={saving}
                 >

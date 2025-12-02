@@ -146,7 +146,7 @@ export default function AdminDashboard() {
   if (status === "loading" || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <RefreshCw className="h-8 w-8 animate-spin text-red-600" />
+        <RefreshCw className="h-8 w-8 animate-spin text-blue-600" />
       </div>
     )
   }
@@ -161,7 +161,7 @@ export default function AdminDashboard() {
       <header className="bg-white border-b sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Car className="h-8 w-8 text-red-600" />
+            <Car className="h-8 w-8 text-blue-600" />
             <span className="text-xl font-bold">SwissCarMarket</span>
             <Badge variant="secondary">Admin</Badge>
           </div>
@@ -320,13 +320,13 @@ export default function AdminDashboard() {
                           <div className="flex items-center gap-2 text-sm text-gray-500">
                             <a
                               href={`mailto:${submission.sellerEmail}`}
-                              className="hover:text-red-600"
+                              className="hover:text-blue-600"
                             >
                               <Mail className="h-3 w-3" />
                             </a>
                             <a
                               href={`tel:${submission.sellerPhone}`}
-                              className="hover:text-red-600"
+                              className="hover:text-blue-600"
                             >
                               <Phone className="h-3 w-3" />
                             </a>
@@ -336,7 +336,7 @@ export default function AdminDashboard() {
                       </TableCell>
                       <TableCell>
                         <div>
-                          <p className="font-medium text-red-600">
+                          <p className="font-medium text-orange-600">
                             {formatPrice(submission.aiPurchasePrice)}
                           </p>
                           <p className="text-xs text-gray-500">

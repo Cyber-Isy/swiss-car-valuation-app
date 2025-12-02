@@ -153,7 +153,7 @@ function SuccessContent() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <Loader2 className="h-12 w-12 animate-spin text-red-600 mx-auto mb-4" />
+          <Loader2 className="h-12 w-12 animate-spin text-blue-600 mx-auto mb-4" />
           <p className="text-gray-600">Laden...</p>
         </div>
       </div>
@@ -161,25 +161,25 @@ function SuccessContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100">
       {/* Header */}
-      <header className="bg-white border-b">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+      <header className="bg-white/80 backdrop-blur-sm border-b border-gray-100 sticky top-0 z-10">
+        <div className="container mx-auto px-4 py-3 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <Car className="h-8 w-8 text-red-600" />
-            <span className="text-xl font-bold">SwissCarMarket</span>
+            <Car className="h-7 w-7 text-blue-600" />
+            <span className="text-lg font-semibold text-gray-900">SwissCarMarket</span>
           </Link>
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-8 max-w-2xl">
+      <div className="container mx-auto px-4 py-8 max-w-xl">
         {/* Success Header */}
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <CheckCircle className="h-10 w-10 text-green-600" />
+        <div className="text-center mb-6">
+          <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+            <CheckCircle className="h-8 w-8 text-green-600" />
           </div>
-          <h1 className="text-3xl font-bold mb-2">Vielen Dank!</h1>
-          <p className="text-gray-600">
+          <h1 className="text-2xl font-bold text-gray-900 mb-1">Vielen Dank!</h1>
+          <p className="text-gray-500 text-sm">
             Ihre Anfrage wurde erfolgreich übermittelt.
           </p>
         </div>
@@ -187,58 +187,73 @@ function SuccessContent() {
         {submission && (
           <>
             {/* Vehicle Summary */}
-            <Card className="mb-6">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg">Ihr Fahrzeug</CardTitle>
-                <CardDescription className="text-base font-medium text-gray-900">
-                  {submission.brand} {submission.model} {submission.variant && `(${submission.variant})`} ({submission.year})
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="pt-0">
-                <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-                  <span>{submission.mileage.toLocaleString("de-CH")} km</span>
-                  {submission.enginePower && <span>{submission.enginePower} PS</span>}
-                  {submission.transmission && (
-                    <span>{submission.transmission === "AUTOMATIC" ? "Automatik" : "Manuell"}</span>
-                  )}
+            <Card className="mb-6 border-0 shadow-sm bg-gradient-to-br from-gray-50 to-white">
+              <CardContent className="py-5">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Car className="h-6 w-6 text-blue-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-semibold text-gray-900 truncate">
+                      {submission.brand} {submission.model} {submission.variant && `${submission.variant}`}
+                    </h3>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-gray-100 text-xs font-medium text-gray-700">
+                        {submission.year}
+                      </span>
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-gray-100 text-xs font-medium text-gray-700">
+                        {submission.mileage.toLocaleString("de-CH")} km
+                      </span>
+                      {submission.enginePower && (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-gray-100 text-xs font-medium text-gray-700">
+                          {submission.enginePower} PS
+                        </span>
+                      )}
+                      {submission.transmission && (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-gray-100 text-xs font-medium text-gray-700">
+                          {submission.transmission === "AUTOMATIC" ? "Automatik" : "Manuell"}
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
 
             {/* Process Steps */}
-            <Card className="mb-6">
-              <CardHeader>
-                <CardTitle className="text-lg">Bewertungsprozess</CardTitle>
+            <Card className="mb-6 border-0 shadow-sm">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base font-medium text-gray-700">Bewertungsprozess</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {steps.map((step, index) => (
-                    <div key={step.id} className="flex items-start gap-4">
+                <div className="space-y-3">
+                  {steps.map((step) => (
+                    <div key={step.id} className={`flex items-center gap-3 p-3 rounded-lg transition-all duration-300 ${
+                      step.status === "active" ? "bg-blue-50" :
+                      step.status === "completed" ? "bg-green-50/50" : ""
+                    }`}>
                       <div className={`
-                        w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-500
+                        w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-500
                         ${step.status === "completed" ? "bg-green-500 text-white" : ""}
-                        ${step.status === "active" ? "bg-red-500 text-white animate-pulse" : ""}
+                        ${step.status === "active" ? "bg-blue-500 text-white" : ""}
                         ${step.status === "pending" ? "bg-gray-200 text-gray-400" : ""}
                       `}>
                         {step.status === "completed" ? (
-                          <CheckCircle className="h-5 w-5" />
+                          <CheckCircle className="h-4 w-4" />
                         ) : step.status === "active" ? (
-                          <Loader2 className="h-5 w-5 animate-spin" />
+                          <Loader2 className="h-4 w-4 animate-spin" />
                         ) : (
-                          step.icon
+                          <span className="text-xs font-medium">{step.id}</span>
                         )}
                       </div>
-                      <div className="flex-1 pt-1">
-                        <h4 className={`font-medium ${step.status === "pending" ? "text-gray-400" : "text-gray-900"}`}>
+                      <div className="flex-1 min-w-0">
+                        <h4 className={`text-sm font-medium ${step.status === "pending" ? "text-gray-400" : "text-gray-900"}`}>
                           {step.title}
                         </h4>
-                        <p className={`text-sm ${step.status === "pending" ? "text-gray-300" : "text-gray-500"}`}>
+                        <p className={`text-xs ${step.status === "pending" ? "text-gray-300" : "text-gray-500"}`}>
                           {step.description}
                         </p>
                       </div>
-                      {step.status === "completed" && (
-                        <CheckCircle className="h-5 w-5 text-green-500 flex-shrink-0 mt-2" />
-                      )}
                     </div>
                   ))}
                 </div>
@@ -247,13 +262,13 @@ function SuccessContent() {
 
             {/* Valuation Result - Show price when available */}
             {valuationComplete && submission.aiPurchasePrice && (
-              <Card className="mb-6 border-2 border-red-200 overflow-hidden">
-                <CardHeader className="bg-gradient-to-r from-red-50 to-red-100 text-center">
-                  <CardTitle className="text-red-700">Unser Angebot für Ihr Fahrzeug</CardTitle>
+              <Card className="mb-6 border-2 border-green-200 overflow-hidden shadow-lg">
+                <CardHeader className="bg-gradient-to-r from-green-50 to-green-100/80 text-center py-4">
+                  <CardTitle className="text-green-800 text-lg font-semibold">Unser Angebot für Ihr Fahrzeug</CardTitle>
                 </CardHeader>
-                <CardContent className="pt-8 pb-8">
+                <CardContent className="py-10 bg-white">
                   <div className="text-center">
-                    <div className="text-5xl font-bold text-red-600 mb-4">
+                    <div className="text-5xl md:text-6xl font-bold text-green-600 mb-3 tracking-tight">
                       {formatPrice(submission.aiPurchasePrice)}
                     </div>
                     <p className="text-gray-500 text-sm">
@@ -266,32 +281,29 @@ function SuccessContent() {
 
             {/* No listings found - Show message to user */}
             {valuationComplete && !submission.aiPurchasePrice && submission.aiConfidence === 'none' && (
-              <Card className="mb-6 border-2 border-amber-200 overflow-hidden">
-                <CardHeader className="bg-gradient-to-r from-amber-50 to-amber-100 text-center">
-                  <CardTitle className="text-amber-700">Keine vergleichbaren Inserate gefunden</CardTitle>
-                </CardHeader>
-                <CardContent className="pt-6 pb-6">
-                  <div className="text-center">
-                    <p className="text-gray-700 mb-4">
-                      Derzeit sind keine vergleichbaren Fahrzeuge auf dem Schweizer Markt inseriert.
-                    </p>
-                    <p className="text-gray-600 text-sm">
-                      Unser Team wird Sie zeitnah mit einem persönlichen Angebot kontaktieren.
-                    </p>
+              <Card className="mb-6 border-0 shadow-sm bg-gradient-to-br from-amber-50/50 to-white">
+                <CardContent className="py-8 text-center">
+                  <div className="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center mx-auto mb-4">
+                    <Search className="h-6 w-6 text-amber-600" />
                   </div>
+                  <h3 className="font-semibold text-gray-900 mb-2">Keine vergleichbaren Inserate gefunden</h3>
+                  <p className="text-gray-600 text-sm max-w-sm mx-auto">
+                    Derzeit sind keine vergleichbaren Fahrzeuge auf dem Schweizer Markt inseriert. Unser Team wird Sie zeitnah kontaktieren.
+                  </p>
                 </CardContent>
               </Card>
             )}
 
             {/* Waiting message when not complete */}
             {!valuationComplete && (
-              <Card className="mb-6 border-2 border-gray-200">
+              <Card className="mb-6 border-0 shadow-sm bg-gradient-to-br from-blue-50/50 to-white">
                 <CardContent className="py-8 text-center">
-                  <Loader2 className="h-8 w-8 animate-spin text-red-600 mx-auto mb-4" />
-                  <h3 className="font-medium text-lg mb-2">Bewertung wird erstellt...</h3>
+                  <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center mx-auto mb-4">
+                    <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+                  </div>
+                  <h3 className="font-semibold text-gray-900 mb-1">Bewertung wird erstellt...</h3>
                   <p className="text-gray-500 text-sm">
                     Wir durchsuchen aktuelle Inserate in der Schweiz.
-                    <br />Dies dauert normalerweise 10-30 Sekunden.
                   </p>
                 </CardContent>
               </Card>
@@ -299,42 +311,38 @@ function SuccessContent() {
 
             {/* Next Steps - Only show after valuation */}
             {valuationComplete && (
-              <Card className="mb-6">
-                <CardHeader>
-                  <CardTitle className="text-lg">Was passiert als nächstes?</CardTitle>
+              <Card className="mb-6 border-0 shadow-sm">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base font-medium text-gray-700">Was passiert als nächstes?</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex gap-4">
-                    <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-red-600 font-bold text-sm">1</span>
+                <CardContent>
+                  <div className="grid gap-4">
+                    <div className="flex items-start gap-3">
+                      <div className="w-7 h-7 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <span className="text-blue-600 font-semibold text-xs">1</span>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm text-gray-900">Wir prüfen Ihre Angaben</h4>
+                        <p className="text-xs text-gray-500 mt-0.5">Unser Team überprüft die Fahrzeugdaten und Bilder.</p>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="font-medium">Wir prüfen Ihre Angaben</h4>
-                      <p className="text-sm text-gray-600">
-                        Unser Team überprüft die Fahrzeugdaten und Bilder.
-                      </p>
+                    <div className="flex items-start gap-3">
+                      <div className="w-7 h-7 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <span className="text-blue-600 font-semibold text-xs">2</span>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm text-gray-900">Sie erhalten unser finales Angebot</h4>
+                        <p className="text-xs text-gray-500 mt-0.5">Innerhalb von 30 Minuten kontaktieren wir Sie.</p>
+                      </div>
                     </div>
-                  </div>
-                  <div className="flex gap-4">
-                    <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-red-600 font-bold text-sm">2</span>
-                    </div>
-                    <div>
-                      <h4 className="font-medium">Sie erhalten unser finales Angebot</h4>
-                      <p className="text-sm text-gray-600">
-                        Innerhalb von 30 Minuten kontaktieren wir Sie.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex gap-4">
-                    <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-red-600 font-bold text-sm">3</span>
-                    </div>
-                    <div>
-                      <h4 className="font-medium">Abholung & Zahlung</h4>
-                      <p className="text-sm text-gray-600">
-                        Bei Annahme holen wir Ihr Auto ab und zahlen sofort.
-                      </p>
+                    <div className="flex items-start gap-3">
+                      <div className="w-7 h-7 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <span className="text-blue-600 font-semibold text-xs">3</span>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm text-gray-900">Abholung & Zahlung</h4>
+                        <p className="text-xs text-gray-500 mt-0.5">Bei Annahme holen wir Ihr Auto ab und zahlen sofort.</p>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -344,41 +352,34 @@ function SuccessContent() {
         )}
 
         {/* Contact */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Fragen?</CardTitle>
-            <CardDescription>
-              Unser Team ist für Sie da
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <a
-              href="tel:+41445065010"
-              className="flex items-center gap-3 p-3 rounded-lg border hover:bg-gray-50 transition-colors"
-            >
-              <Phone className="h-5 w-5 text-red-600" />
-              <div>
-                <div className="font-medium">+41 44 506 50 10</div>
-                <div className="text-sm text-gray-500">Mo-Fr 8:00-18:00</div>
-              </div>
-            </a>
-            <a
-              href="mailto:info@swisscarmarket.ch"
-              className="flex items-center gap-3 p-3 rounded-lg border hover:bg-gray-50 transition-colors"
-            >
-              <Mail className="h-5 w-5 text-red-600" />
-              <div>
-                <div className="font-medium">info@swisscarmarket.ch</div>
-                <div className="text-sm text-gray-500">Antwort innerhalb 24h</div>
-              </div>
-            </a>
+        <Card className="border-0 shadow-sm">
+          <CardContent className="py-5">
+            <h3 className="text-sm font-medium text-gray-700 mb-3">Fragen? Wir sind für Sie da.</h3>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <a
+                href="tel:+41445065010"
+                className="flex-1 flex items-center gap-2 px-4 py-2.5 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
+              >
+                <Phone className="h-4 w-4 text-gray-500" />
+                <span className="text-sm font-medium text-gray-700">+41 44 506 50 10</span>
+              </a>
+              <a
+                href="mailto:info@swisscarmarket.ch"
+                className="flex-1 flex items-center gap-2 px-4 py-2.5 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors"
+              >
+                <Mail className="h-4 w-4 text-gray-500" />
+                <span className="text-sm font-medium text-gray-700">info@swisscarmarket.ch</span>
+              </a>
+            </div>
           </CardContent>
         </Card>
 
         {/* Back to Home */}
-        <div className="mt-8 text-center">
+        <div className="mt-6 text-center">
           <Link href="/">
-            <Button variant="outline">Zurück zur Startseite</Button>
+            <Button variant="ghost" className="text-gray-500 hover:text-gray-700 text-sm">
+              Zurück zur Startseite
+            </Button>
           </Link>
         </div>
       </div>
@@ -390,7 +391,7 @@ function LoadingFallback() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
       <div className="text-center">
-        <Loader2 className="h-12 w-12 animate-spin text-red-600 mx-auto mb-4" />
+        <Loader2 className="h-12 w-12 animate-spin text-blue-600 mx-auto mb-4" />
         <p className="text-gray-600">Laden...</p>
       </div>
     </div>

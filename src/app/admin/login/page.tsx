@@ -46,7 +46,7 @@ export default function AdminLoginPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <Link href="/" className="flex items-center justify-center gap-2 mb-4">
-            <Car className="h-8 w-8 text-red-600" />
+            <Car className="h-8 w-8 text-blue-600" />
             <span className="text-xl font-bold">SwissCarMarket</span>
           </Link>
           <CardTitle>Admin Login</CardTitle>
@@ -79,7 +79,7 @@ export default function AdminLoginPage() {
             </div>
             <Button
               type="submit"
-              className="w-full bg-red-600 hover:bg-red-700"
+              className="w-full bg-orange-500 hover:bg-orange-600"
               disabled={isLoading}
             >
               {isLoading ? (

@@ -10,7 +10,7 @@ export default function Home() {
       <header className="border-b">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
-            <Car className="h-8 w-8 text-red-600" />
+            <Car className="h-8 w-8 text-blue-600" />
             <span className="text-xl font-bold">SwissCarMarket</span>
           </Link>
           <nav className="hidden md:flex items-center gap-6">
@@ -21,13 +21,13 @@ export default function Home() {
               Über uns
             </Link>
             <Link href="/verkaufen">
-              <Button className="bg-red-600 hover:bg-red-700">
+              <Button className="bg-orange-500 hover:bg-orange-600">
                 Auto verkaufen
               </Button>
             </Link>
           </nav>
           <Link href="/verkaufen" className="md:hidden">
-            <Button size="sm" className="bg-red-600 hover:bg-red-700">
+            <Button size="sm" className="bg-orange-500 hover:bg-orange-600">
               Verkaufen
             </Button>
           </Link>
@@ -40,7 +40,7 @@ export default function Home() {
           <div className="max-w-3xl mx-auto text-center">
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
               Verkaufen Sie Ihr Auto in{" "}
-              <span className="text-red-600">30 Minuten</span>
+              <span className="text-orange-500">30 Minuten</span>
             </h1>
             <p className="text-xl text-gray-600 mb-8">
               Schnell, einfach und zum besten Preis. Wir kaufen Ihr Auto direkt -
@@ -48,7 +48,7 @@ export default function Home() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/verkaufen">
-                <Button size="lg" className="bg-red-600 hover:bg-red-700 text-lg px-8">
+                <Button size="lg" className="bg-orange-500 hover:bg-orange-600 text-lg px-8">
                   Jetzt Auto bewerten
                 </Button>
               </Link>
@@ -67,24 +67,24 @@ export default function Home() {
       </section>
 
       {/* Stats Section */}
-      <section className="py-12 bg-red-600 text-white">
+      <section className="py-12 bg-blue-600 text-white">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div>
               <div className="text-3xl md:text-4xl font-bold">15+</div>
-              <div className="text-red-100">Jahre Erfahrung</div>
+              <div className="text-blue-100">Jahre Erfahrung</div>
             </div>
             <div>
               <div className="text-3xl md:text-4xl font-bold">4&apos;200+</div>
-              <div className="text-red-100">Autos gekauft</div>
+              <div className="text-blue-100">Autos gekauft</div>
             </div>
             <div>
               <div className="text-3xl md:text-4xl font-bold">8&apos;400+</div>
-              <div className="text-red-100">Zufriedene Kunden</div>
+              <div className="text-blue-100">Zufriedene Kunden</div>
             </div>
             <div>
               <div className="text-3xl md:text-4xl font-bold">30 Min</div>
-              <div className="text-red-100">Zum Angebot</div>
+              <div className="text-blue-100">Zum Angebot</div>
             </div>
           </div>
         </div>
@@ -99,8 +99,8 @@ export default function Home() {
           <div className="grid md:grid-cols-4 gap-8">
             <Card className="text-center">
               <CardContent className="pt-6">
-                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl font-bold text-red-600">1</span>
+                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl font-bold text-blue-600">1</span>
                 </div>
                 <h3 className="font-semibold text-lg mb-2">Daten eingeben</h3>
                 <p className="text-gray-600 text-sm">
@@ -110,8 +110,8 @@ export default function Home() {
             </Card>
             <Card className="text-center">
               <CardContent className="pt-6">
-                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl font-bold text-red-600">2</span>
+                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl font-bold text-blue-600">2</span>
                 </div>
                 <h3 className="font-semibold text-lg mb-2">Sofort-Bewertung</h3>
                 <p className="text-gray-600 text-sm">
@@ -121,8 +121,8 @@ export default function Home() {
             </Card>
             <Card className="text-center">
               <CardContent className="pt-6">
-                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl font-bold text-red-600">3</span>
+                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl font-bold text-blue-600">3</span>
                 </div>
                 <h3 className="font-semibold text-lg mb-2">Angebot annehmen</h3>
                 <p className="text-gray-600 text-sm">
@@ -132,8 +132,8 @@ export default function Home() {
             </Card>
             <Card className="text-center">
               <CardContent className="pt-6">
-                <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl font-bold text-red-600">4</span>
+                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl font-bold text-blue-600">4</span>
                 </div>
                 <h3 className="font-semibold text-lg mb-2">Sofort bezahlt</h3>
                 <p className="text-gray-600 text-sm">
@@ -154,7 +154,7 @@ export default function Home() {
           <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
             <div className="flex gap-4">
               <div className="flex-shrink-0">
-                <Clock className="h-8 w-8 text-red-600" />
+                <Clock className="h-8 w-8 text-blue-600" />
               </div>
               <div>
                 <h3 className="font-semibold text-lg mb-2">Schnell & Einfach</h3>
@@ -165,7 +165,7 @@ export default function Home() {
             </div>
             <div className="flex gap-4">
               <div className="flex-shrink-0">
-                <CreditCard className="h-8 w-8 text-red-600" />
+                <CreditCard className="h-8 w-8 text-blue-600" />
               </div>
               <div>
                 <h3 className="font-semibold text-lg mb-2">Faire Preise</h3>
@@ -176,7 +176,7 @@ export default function Home() {
             </div>
             <div className="flex gap-4">
               <div className="flex-shrink-0">
-                <Shield className="h-8 w-8 text-red-600" />
+                <Shield className="h-8 w-8 text-blue-600" />
               </div>
               <div>
                 <h3 className="font-semibold text-lg mb-2">Sicher & Seriös</h3>
@@ -200,7 +200,7 @@ export default function Home() {
             keine versteckten Kosten.
           </p>
           <Link href="/verkaufen">
-            <Button size="lg" className="bg-red-600 hover:bg-red-700 text-lg px-8">
+            <Button size="lg" className="bg-orange-500 hover:bg-orange-600 text-lg px-8">
               Jetzt kostenlos bewerten
             </Button>
           </Link>
@@ -266,7 +266,7 @@ export default function Home() {
           <div className="grid md:grid-cols-4 gap-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <Car className="h-6 w-6 text-red-500" />
+                <Car className="h-6 w-6 text-blue-500" />
                 <span className="text-lg font-bold">SwissCarMarket</span>
               </div>
               <p className="text-gray-400 text-sm">
