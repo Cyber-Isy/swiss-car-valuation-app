@@ -4,8 +4,8 @@ import { useEffect, useState } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter, useParams } from "next/navigation"
 import Link from "next/link"
+import { AdminNav } from "@/components/admin-nav"
 import {
-  Car,
   ArrowLeft,
   Phone,
   Mail,
@@ -274,9 +274,11 @@ export default function SubmissionDetailPage() {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* Header */}
-      <header className="bg-white border-b sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
+      <AdminNav />
+
+      <div className="container mx-auto px-4 py-8">
+        {/* Page Header */}
+        <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
             <Link href="/admin">
               <Button variant="ghost" size="sm">
@@ -284,20 +286,20 @@ export default function SubmissionDetailPage() {
                 Zurück
               </Button>
             </Link>
-            <div className="flex items-center gap-2">
-              <Car className="h-6 w-6 text-blue-600" />
-              <span className="font-bold">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">
                 {submission.brand} {submission.model}
-              </span>
+              </h1>
+              <p className="text-sm text-gray-500">
+                Anfrage vom {formatDate(submission.createdAt)}
+              </p>
             </div>
           </div>
           <Badge className={statusColors[submission.status]}>
             {statusLabels[submission.status]}
           </Badge>
         </div>
-      </header>
 
-      <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">

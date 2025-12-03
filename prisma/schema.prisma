@@ -79,6 +79,8 @@ model Submission {
   // Admin fields
   notes             String?
   finalOfferPrice   Int?
+  archived          Boolean   @default(false)
+  archivedAt        DateTime?
 
   // Relations
   vehicleImages     VehicleImage[]
@@ -143,4 +145,12 @@ enum ServiceHistory {
   FULL
   PARTIAL
   NONE
+}
+
+// App Settings (Singleton)
+model Settings {
+  id            String   @id @default("default")
+  profitMargin  Float    @default(15.0) // Default 15% profit margin
+  updatedAt     DateTime @updatedAt
+  updatedBy     String?  // Email of admin who updated
 }

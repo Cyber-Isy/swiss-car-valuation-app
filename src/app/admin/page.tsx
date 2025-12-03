@@ -1,20 +1,24 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useSession, signOut } from "next-auth/react"
+import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
+import { AdminNav } from "@/components/admin-nav"
 import {
   Car,
-  LogOut,
   RefreshCw,
   Search,
   Eye,
   Clock,
   CheckCircle,
-  XCircle,
   Phone,
   Mail,
+  TrendingUp,
+  AlertCircle,
+  Filter,
+  Archive,
+  ArchiveRestore,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -50,6 +54,8 @@ interface Submission {
   sellerLocation: string
   aiPurchasePrice: number | null
   aiMarketValue: number | null
+  archived: boolean
+  archivedAt: string | null
 }
 
 const statusLabels: Record<string, string> = {
@@ -62,12 +68,12 @@ const statusLabels: Record<string, string> = {
 }
 
 const statusColors: Record<string, string> = {
-  NEW: "bg-blue-500",
-  CONTACTED: "bg-yellow-500",
-  OFFER_SENT: "bg-purple-500",
-  ACCEPTED: "bg-green-500",
-  COMPLETED: "bg-gray-500",
-  REJECTED: "bg-red-500",
+  NEW: "bg-blue-600 text-white",
+  CONTACTED: "bg-yellow-600 text-white",
+  OFFER_SENT: "bg-purple-600 text-white",
+  ACCEPTED: "bg-green-600 text-white",
+  COMPLETED: "bg-gray-600 text-white",
+  REJECTED: "bg-red-600 text-white",
 }
 
 export default function AdminDashboard() {
@@ -77,6 +83,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("all")
+  const [showArchived, setShowArchived] = useState(false)
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -98,6 +105,22 @@ export default function AdminDashboard() {
       console.error("Error fetching submissions:", error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleArchive = async (id: string, archived: boolean) => {
+    try {
+      const response = await fetch(`/api/submissions/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ archived }),
+      })
+
+      if (response.ok) {
+        fetchSubmissions()
+      }
+    } catch (error) {
+      console.error("Error archiving submission:", error)
     }
   }
 
@@ -131,7 +154,9 @@ export default function AdminDashboard() {
     const matchesStatus =
       statusFilter === "all" || submission.status === statusFilter
 
-    return matchesSearch && matchesStatus
+    const matchesArchived = showArchived ? submission.archived : !submission.archived
+
+    return matchesSearch && matchesStatus && matchesArchived
   })
 
   const stats = {
@@ -143,10 +168,17 @@ export default function AdminDashboard() {
     completed: submissions.filter((s) => s.status === "COMPLETED").length,
   }
 
+  const totalValue = submissions
+    .filter((s) => s.aiPurchasePrice)
+    .reduce((sum, s) => sum + (s.aiPurchasePrice || 0), 0)
+
   if (status === "loading" || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <RefreshCw className="h-8 w-8 animate-spin text-blue-600" />
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="text-center">
+          <RefreshCw className="h-12 w-12 animate-spin text-blue-600 mx-auto mb-4" />
+          <p className="text-gray-600 font-medium">Lade Dashboard...</p>
+        </div>
       </div>
     )
   }
@@ -156,106 +188,101 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* Header */}
-      <header className="bg-white border-b sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Car className="h-8 w-8 text-blue-600" />
-            <span className="text-xl font-bold">SwissCarMarket</span>
-            <Badge variant="secondary">Admin</Badge>
-          </div>
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-gray-600">
-              {session?.user?.email}
-            </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => signOut({ callbackUrl: "/admin/login" })}
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              Abmelden
-            </Button>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-gray-50">
+      <AdminNav />
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-6 py-8 max-w-7xl">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
+          <p className="text-gray-600">Übersicht aller Fahrzeuganfragen und Bewertungen</p>
+        </div>
+
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500">Gesamt</p>
-                  <p className="text-2xl font-bold">{stats.total}</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <Card className="border border-gray-200">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-blue-100 rounded-lg">
+                  <Car className="h-6 w-6 text-blue-700" />
                 </div>
-                <Car className="h-8 w-8 text-gray-400" />
+                <div className="text-right">
+                  <p className="text-3xl font-bold text-gray-900">{stats.total}</p>
+                </div>
               </div>
+              <p className="text-sm font-semibold text-gray-700 mb-1">Gesamt Anfragen</p>
+              <p className="text-xs text-gray-500">Alle eingegangenen Anfragen</p>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500">Neu</p>
-                  <p className="text-2xl font-bold text-blue-600">{stats.new}</p>
+
+          <Card className="border border-gray-200">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-orange-100 rounded-lg">
+                  <Clock className="h-6 w-6 text-orange-700" />
                 </div>
-                <Clock className="h-8 w-8 text-blue-400" />
+                <div className="text-right">
+                  <p className="text-3xl font-bold text-orange-600">{stats.new}</p>
+                </div>
               </div>
+              <p className="text-sm font-semibold text-gray-700 mb-1">Neu & Unbearbeitet</p>
+              <p className="text-xs text-gray-500">Warten auf Bearbeitung</p>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500">In Bearbeitung</p>
-                  <p className="text-2xl font-bold text-yellow-600">
-                    {stats.inProgress}
-                  </p>
+
+          <Card className="border border-gray-200">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-purple-100 rounded-lg">
+                  <RefreshCw className="h-6 w-6 text-purple-700" />
                 </div>
-                <RefreshCw className="h-8 w-8 text-yellow-400" />
+                <div className="text-right">
+                  <p className="text-3xl font-bold text-purple-600">{stats.inProgress}</p>
+                </div>
               </div>
+              <p className="text-sm font-semibold text-gray-700 mb-1">In Bearbeitung</p>
+              <p className="text-xs text-gray-500">Aktive Verhandlungen</p>
             </CardContent>
           </Card>
-          <Card>
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-500">Abgeschlossen</p>
-                  <p className="text-2xl font-bold text-green-600">
-                    {stats.completed}
-                  </p>
+
+          <Card className="border border-gray-200">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-green-100 rounded-lg">
+                  <TrendingUp className="h-6 w-6 text-green-700" />
                 </div>
-                <CheckCircle className="h-8 w-8 text-green-400" />
+                <div className="text-right">
+                  <p className="text-xl font-bold text-green-600">{formatPrice(totalValue)}</p>
+                </div>
               </div>
+              <p className="text-sm font-semibold text-gray-700 mb-1">Gesamtwert Portfolio</p>
+              <p className="text-xs text-gray-500">Summe aller Bewertungen</p>
             </CardContent>
           </Card>
         </div>
 
         {/* Submissions Table */}
-        <Card>
-          <CardHeader>
+        <Card className="border border-gray-200">
+          <CardHeader className="border-b border-gray-200 bg-white">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
-                <CardTitle>Anfragen</CardTitle>
-                <CardDescription>
-                  Alle eingegangenen Fahrzeuganfragen
+                <CardTitle className="text-xl font-bold text-gray-900">Fahrzeuganfragen</CardTitle>
+                <CardDescription className="mt-1 text-sm">
+                  {filteredSubmissions.length} von {submissions.length} Anfragen
                 </CardDescription>
               </div>
-              <div className="flex gap-2">
-                <div className="relative">
+              <div className="flex gap-3 flex-wrap">
+                <div className="relative flex-1 md:flex-initial">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                   <Input
-                    placeholder="Suchen..."
+                    placeholder="Suche..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 w-64"
+                    className="pl-9 md:w-64 border-gray-300"
                   />
                 </div>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-40">
+                  <SelectTrigger className="w-[160px] border-gray-300">
                     <SelectValue placeholder="Status" />
                   </SelectTrigger>
                   <SelectContent>
@@ -268,95 +295,161 @@ export default function AdminDashboard() {
                     <SelectItem value="REJECTED">Abgelehnt</SelectItem>
                   </SelectContent>
                 </Select>
-                <Button variant="outline" onClick={fetchSubmissions}>
+                <Button
+                  variant={showArchived ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setShowArchived(!showArchived)}
+                  className={showArchived ? "bg-gray-700 hover:bg-gray-800" : "border-gray-300"}
+                >
+                  <Archive className="h-4 w-4 mr-2" />
+                  {showArchived ? "Aktive" : "Archiv"}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={fetchSubmissions}
+                  className="border-gray-300"
+                >
                   <RefreshCw className="h-4 w-4" />
                 </Button>
               </div>
             </div>
           </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Datum</TableHead>
-                  <TableHead>Fahrzeug</TableHead>
-                  <TableHead>Verkäufer</TableHead>
-                  <TableHead>Bewertung</TableHead>
-                  <TableHead>Aktionen</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredSubmissions.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center py-8">
-                      <p className="text-gray-500">Keine Anfragen gefunden</p>
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filteredSubmissions.map((submission) => (
-                    <TableRow key={submission.id}>
-                      <TableCell>
-                        <Badge className={statusColors[submission.status]}>
-                          {statusLabels[submission.status]}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-sm text-gray-600">
-                        {formatDate(submission.createdAt)}
-                      </TableCell>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">
-                            {submission.brand} {submission.model}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            {submission.year} • {submission.mileage.toLocaleString("de-CH")} km
-                          </p>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium">{submission.sellerName}</p>
-                          <div className="flex items-center gap-2 text-sm text-gray-500">
-                            <a
-                              href={`mailto:${submission.sellerEmail}`}
-                              className="hover:text-blue-600"
-                            >
-                              <Mail className="h-3 w-3" />
-                            </a>
-                            <a
-                              href={`tel:${submission.sellerPhone}`}
-                              className="hover:text-blue-600"
-                            >
-                              <Phone className="h-3 w-3" />
-                            </a>
-                            <span>{submission.sellerLocation}</span>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium text-orange-600">
-                            {formatPrice(submission.aiPurchasePrice)}
-                          </p>
-                          <p className="text-xs text-gray-500">
-                            Markt: {formatPrice(submission.aiMarketValue)}
-                          </p>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Link href={`/admin/submissions/${submission.id}`}>
-                          <Button variant="ghost" size="sm">
-                            <Eye className="h-4 w-4 mr-1" />
-                            Details
-                          </Button>
-                        </Link>
-                      </TableCell>
+          <CardContent className="p-0">
+            {filteredSubmissions.length === 0 ? (
+              <div className="text-center py-16 px-4 bg-white">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-lg bg-gray-100 mb-4">
+                  <Car className="h-8 w-8 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  {searchTerm || statusFilter !== "all"
+                    ? "Keine Anfragen gefunden"
+                    : "Noch keine Anfragen"}
+                </h3>
+                <p className="text-sm text-gray-500 max-w-sm mx-auto">
+                  {searchTerm || statusFilter !== "all"
+                    ? "Versuchen Sie, Ihre Suchkriterien anzupassen."
+                    : "Sobald Kunden Fahrzeuge bewerten lassen, erscheinen sie hier."}
+                </p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow className="bg-gray-50 border-b border-gray-200">
+                      <TableHead className="font-semibold text-gray-700">Status</TableHead>
+                      <TableHead className="font-semibold text-gray-700">Eingegangen</TableHead>
+                      <TableHead className="font-semibold text-gray-700">Fahrzeug</TableHead>
+                      <TableHead className="font-semibold text-gray-700">Verkäufer</TableHead>
+                      <TableHead className="font-semibold text-gray-700 text-right">Bewertung</TableHead>
+                      <TableHead className="font-semibold text-gray-700 text-right">Aktionen</TableHead>
                     </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredSubmissions.map((submission) => (
+                      <TableRow
+                        key={submission.id}
+                        className="border-b border-gray-200 hover:bg-gray-50"
+                      >
+                        <TableCell>
+                          <Badge className={`${statusColors[submission.status]}`}>
+                            {statusLabels[submission.status]}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div>
+                            <p className="text-sm font-medium text-gray-900">
+                              {new Date(submission.createdAt).toLocaleDateString("de-CH")}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              {new Date(submission.createdAt).toLocaleTimeString("de-CH", {
+                                hour: "2-digit",
+                                minute: "2-digit"
+                              })}
+                            </p>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div>
+                            <p className="font-semibold text-gray-900">
+                              {submission.brand} {submission.model}
+                            </p>
+                            <p className="text-sm text-gray-600">
+                              {submission.year} • {submission.mileage.toLocaleString("de-CH")} km
+                            </p>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div>
+                            <p className="font-medium text-gray-900">{submission.sellerName}</p>
+                            <div className="flex items-center gap-3 mt-1">
+                              <a
+                                href={`mailto:${submission.sellerEmail}`}
+                                className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                              >
+                                E-Mail
+                              </a>
+                              <span className="text-gray-300">|</span>
+                              <a
+                                href={`tel:${submission.sellerPhone}`}
+                                className="text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                              >
+                                Anrufen
+                              </a>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div>
+                            <p className="text-base font-bold text-green-700">
+                              {formatPrice(submission.aiPurchasePrice)}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              Markt: {formatPrice(submission.aiMarketValue)}
+                            </p>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex gap-2 justify-end">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                handleArchive(submission.id, !submission.archived)
+                              }}
+                              className="text-gray-600 hover:text-gray-900"
+                            >
+                              {submission.archived ? (
+                                <>
+                                  <ArchiveRestore className="h-4 w-4 mr-1" />
+                                  Wiederherstellen
+                                </>
+                              ) : (
+                                <>
+                                  <Archive className="h-4 w-4 mr-1" />
+                                  Archivieren
+                                </>
+                              )}
+                            </Button>
+                            <Link href={`/admin/submissions/${submission.id}`}>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white"
+                              >
+                                <Eye className="h-4 w-4 mr-1" />
+                                Details
+                              </Button>
+                            </Link>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

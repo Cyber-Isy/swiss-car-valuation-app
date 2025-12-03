@@ -40,13 +40,21 @@ export async function PATCH(
     const { id } = await params
     const body = await request.json()
 
+    const updateData: any = {
+      status: body.status,
+      notes: body.notes,
+      finalOfferPrice: body.finalOfferPrice,
+    }
+
+    // Handle archiving
+    if (typeof body.archived === "boolean") {
+      updateData.archived = body.archived
+      updateData.archivedAt = body.archived ? new Date() : null
+    }
+
     const submission = await prisma.submission.update({
       where: { id },
-      data: {
-        status: body.status,
-        notes: body.notes,
-        finalOfferPrice: body.finalOfferPrice,
-      },
+      data: updateData,
     })
 
     return NextResponse.json(submission)
