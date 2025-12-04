@@ -6,7 +6,7 @@ export const submissionSchema = z.object({
   brand: z.string().min(1, "Marke ist erforderlich"),
   model: z.string().min(1, "Modell ist erforderlich"),
   variant: z.string().optional(), // e.g., "A 180 AMG Line", "320d xDrive", "GTI"
-  mileage: z.coerce.number().min(0, "Kilometerstand muss positiv sein"),
+  mileage: z.coerce.number().min(0, "Kilometerstand muss positiv sein").max(180000, "Wir akzeptieren nur Fahrzeuge mit maximal 180'000 km"),
   fuelType: z.enum(["BENZIN", "DIESEL", "ELEKTRO", "HYBRID", "PLUGIN_HYBRID"], {
     required_error: "Treibstoffart ist erforderlich",
   }),
@@ -15,7 +15,13 @@ export const submissionSchema = z.object({
   }),
 
   // Vehicle info - Tier 1 (Critical)
-  firstRegistration: z.string().min(1, "Erstzulassung ist erforderlich"), // MM/YYYY format
+  firstRegistration: z.string().min(1, "Erstzulassung ist erforderlich").refine(
+    (val) => {
+      const year = parseInt(val.split("/")[1])
+      return !isNaN(year) && year >= 2004
+    },
+    { message: "Wir akzeptieren nur Fahrzeuge ab Baujahr 2004" }
+  ), // MM/YYYY format
   transmission: z.enum(["MANUAL", "AUTOMATIC"], {
     required_error: "Getriebe ist erforderlich",
   }),
@@ -36,7 +42,7 @@ export const submissionSchema = z.object({
   equipment: z.array(z.string()).default([]),
 
   // Legacy field (derived from firstRegistration for backwards compatibility)
-  year: z.coerce.number().min(1900).max(new Date().getFullYear() + 1),
+  year: z.coerce.number().min(2004, "Wir akzeptieren nur Fahrzeuge ab Baujahr 2004").max(new Date().getFullYear() + 1),
 
   // Seller info
   sellerName: z.string().min(2, "Name ist erforderlich"),
@@ -502,11 +508,12 @@ export const generateMonthOptions = () => {
   ]
 }
 
-// Helper function to generate year options (last 30 years + next year)
+// Helper function to generate year options (from 2004 to next year)
 export const generateYearOptions = () => {
   const currentYear = new Date().getFullYear()
+  const minYear = 2004 // Minimum accepted year
   const years = []
-  for (let year = currentYear + 1; year >= currentYear - 30; year--) {
+  for (let year = currentYear + 1; year >= minYear; year--) {
     years.push({ value: year.toString(), label: year.toString() })
   }
   return years
