@@ -220,7 +220,7 @@ Falls keine Treffer: "Derzeit sind keine vergleichbaren Fahrzeuge auf dem Schwei
 
       // Build variant matching instruction
       const variantMatchRule = sanitizedVariant
-        ? `- NUR Inserate die EXAKT "${sanitizedVariant}" im Titel enthalten (z.B. "Golf GTI" ja, "Golf 1.0 TSI" nein)`
+        ? `- NUR Inserate die "${sanitizedVariant}" im Titel enthalten (z.B. "Golf GTI Performance" ja, "Golf VII GTI" ja, "Golf 1.0 TSI" nein, "Golf TDI" nein)`
         : `- Keine Premium-Varianten (GTI, AMG, RS, M-Sport, etc.)`
 
       const analysisPrompt = `Analysiere diese ${searchData.results.length} Inserate für ${vehicleDesc} (${input.year}):
