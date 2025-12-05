@@ -2,10 +2,37 @@ import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
 import { getCarValuation } from "@/lib/perplexity"
 import { submissionSchema } from "@/lib/validations"
+import { checkIpRateLimit, checkEmailRateLimit } from "@/lib/rate-limiter"
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
+
+    // Extract IP address for rate limiting
+    const ip = request.headers.get('x-forwarded-for')?.split(',')[0] ||
+               request.headers.get('x-real-ip') ||
+               'unknown'
+
+    // Check IP rate limit (100 requests/hour)
+    const ipLimit = checkIpRateLimit(ip)
+    if (!ipLimit.allowed) {
+      const retryAfter = Math.ceil((ipLimit.resetAt - Date.now()) / 1000)
+      return NextResponse.json(
+        {
+          error: "Zu viele Anfragen. Bitte versuchen Sie es später erneut.",
+          retryAfter
+        },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': retryAfter.toString(),
+            'X-RateLimit-Limit': '100',
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': new Date(ipLimit.resetAt).toISOString()
+          }
+        }
+      )
+    }
 
     // Validate the input
     const validationResult = submissionSchema.safeParse(body)
@@ -18,6 +45,27 @@ export async function POST(request: NextRequest) {
 
     const data = validationResult.data
     const { vehicleImageUrls, fahrzeugausweisUrl } = body
+
+    // Check email rate limit (5 submissions/day)
+    const emailLimit = checkEmailRateLimit(data.sellerEmail)
+    if (!emailLimit.allowed) {
+      const retryAfter = Math.ceil((emailLimit.resetAt - Date.now()) / 1000)
+      return NextResponse.json(
+        {
+          error: "Sie haben das Tageslimit von 5 Einreichungen erreicht. Bitte versuchen Sie es morgen erneut.",
+          retryAfter
+        },
+        {
+          status: 429,
+          headers: {
+            'Retry-After': retryAfter.toString(),
+            'X-RateLimit-Limit': '5',
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': new Date(emailLimit.resetAt).toISOString()
+          }
+        }
+      )
+    }
 
     if (!fahrzeugausweisUrl) {
       return NextResponse.json(
@@ -48,7 +96,6 @@ export async function POST(request: NextRequest) {
     const submission = await prisma.submission.create({
       data: {
         // Basic info
-        kontrollschild: data.kontrollschild,
         brand: data.brand,
         model: data.model,
         variant: data.variant || null,
@@ -120,6 +167,7 @@ export async function POST(request: NextRequest) {
             aiListings: valuation.listings as any,
             aiConfidence: valuation.confidence,
             aiReasoning: valuation.reasoning,
+            aiListingsMetadata: valuation.metadata as any,
           },
         })
       })

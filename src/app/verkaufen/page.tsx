@@ -70,7 +70,6 @@ export default function VerkaufenPage() {
   const form = useForm<SubmissionInput>({
     resolver: zodResolver(submissionSchema) as any,
     defaultValues: {
-      kontrollschild: "",
       brand: "",
       model: "",
       variant: "",
@@ -158,7 +157,6 @@ export default function VerkaufenPage() {
       return true
     } else if (step === 3) {
       fieldsToValidate = [
-        "kontrollschild",
         "sellerName",
         "sellerEmail",
         "sellerPhone",
@@ -1345,24 +1343,6 @@ export default function VerkaufenPage() {
                 </CardHeader>
                 <CardContent className="pt-8 pb-8 px-6 sm:px-8">
                   <div className="space-y-6">
-                    <FormField
-                      control={form.control}
-                      name="kontrollschild"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel className="text-gray-700">Kontrollschild *</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="z.B. ZH 123456"
-                              className="h-11 bg-gray-50 border-gray-200 focus:bg-white"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
                     <FormField
                       control={form.control}
                       name="sellerName"

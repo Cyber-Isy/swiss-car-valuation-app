@@ -32,7 +32,14 @@
       "Bash(gh auth:*)",
       "Bash(gh repo create:*)",
       "Bash(vercel env add:*)",
-      "Bash(vercel env rm:*)"
+      "Bash(vercel env rm:*)",
+      "Bash(vercel logs:*)",
+      "Bash(timeout /t 5 /nobreak)",
+      "Bash(npx prisma studio)",
+      "Bash(git checkout:*)",
+      "Bash(npm run test:run:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(npm install:*)"
     ],
     "deny": [],
     "ask": []

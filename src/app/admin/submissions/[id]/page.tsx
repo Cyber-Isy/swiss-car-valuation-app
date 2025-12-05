@@ -51,7 +51,6 @@ interface Submission {
   id: string
   status: string
   createdAt: string
-  kontrollschild: string
   brand: string
   model: string
   variant: string | null
@@ -315,10 +314,6 @@ export default function SubmissionDetailPage() {
                 {/* Basic Info */}
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   <div>
-                    <p className="text-sm text-gray-500">Kontrollschild</p>
-                    <p className="font-medium">{submission.kontrollschild}</p>
-                  </div>
-                  <div>
                     <p className="text-sm text-gray-500">Marke / Modell</p>
                     <p className="font-medium">
                       {submission.brand} {submission.model}
@@ -536,9 +531,25 @@ export default function SubmissionDetailPage() {
 
                   {submission.aiListings && submission.aiListings.length > 0 && (
                     <div>
-                      <p className="text-sm text-gray-500 mb-2">
-                        Vergleichbare Inserate ({submission.aiListings.length} gefunden)
-                      </p>
+                      <div className="flex items-center gap-2 mb-2">
+                        <p className="text-sm text-gray-500">
+                          Vergleichbare Inserate ({submission.aiListings.length} gefunden)
+                        </p>
+                        {submission.aiListingsMetadata?.qualityScore != null && (
+                          <Badge
+                            variant="outline"
+                            className={
+                              submission.aiListingsMetadata.qualityScore >= 80
+                                ? "bg-green-50 text-green-700 border-green-300"
+                                : submission.aiListingsMetadata.qualityScore >= 60
+                                ? "bg-yellow-50 text-yellow-700 border-yellow-300"
+                                : "bg-red-50 text-red-700 border-red-300"
+                            }
+                          >
+                            Datenqualität: {submission.aiListingsMetadata.qualityScore}%
+                          </Badge>
+                        )}
+                      </div>
                       <div className="border rounded-lg overflow-hidden">
                         <table className="w-full text-sm">
                           <thead className="bg-gray-50">

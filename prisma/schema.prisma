@@ -28,7 +28,6 @@ model Submission {
   updatedAt         DateTime @updatedAt
 
   // Vehicle info - Basic
-  kontrollschild    String
   brand             String
   model             String
   variant           String?           // GTI, AMG, M-Sport, etc.
@@ -75,6 +74,7 @@ model Submission {
   aiListings        Json?     // Array of listing objects with url, title, price, etc.
   aiConfidence      String?   // high/medium/low
   aiReasoning       String?
+  aiListingsMetadata Json?    // Extraction quality metadata
 
   // Admin fields
   notes             String?
@@ -153,4 +153,32 @@ model Settings {
   profitMargin  Float    @default(15.0) // Default 15% profit margin
   updatedAt     DateTime @updatedAt
   updatedBy     String?  // Email of admin who updated
+}
+
+// Valuation Cache for cost optimization
+model ValuationCache {
+  id              String   @id @default(cuid())
+  cacheKey        String   // Composite key: brand:model:year:mileageBucket:fuelType
+
+  // Original vehicle parameters
+  brand           String
+  model           String
+  year            Int
+  mileage         Int
+  fuelType        String
+
+  // Cached valuation results
+  marketValue     Int?
+  priceMin        Int?
+  priceMax        Int?
+  purchasePrice   Int?
+  listingsCount   Int
+  sources         String[]
+  confidence      String
+  reasoning       String
+
+  createdAt       DateTime @default(now())
+
+  @@index([cacheKey])
+  @@index([createdAt])
 }
