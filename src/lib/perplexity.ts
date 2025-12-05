@@ -63,6 +63,7 @@ export async function getCarValuation(input: ValuationInput): Promise<ValuationR
   const cachedResult = await getCachedValuation({
     brand: input.brand,
     model: input.model,
+    variant: input.variant,
     year: input.year,
     mileage: input.mileage,
     fuelType: input.fuelType
@@ -452,6 +453,7 @@ Antworte NUR mit diesem JSON (OHNE zusätzlichen Text):
         {
           brand: input.brand,
           model: input.model,
+          variant: input.variant,
           year: input.year,
           mileage: input.mileage,
           fuelType: input.fuelType

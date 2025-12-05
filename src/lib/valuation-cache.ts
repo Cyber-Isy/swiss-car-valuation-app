@@ -12,6 +12,7 @@ const CACHE_TTL_DAYS = 7
 interface CacheKey {
   brand: string
   model: string
+  variant?: string
   year: number
   mileage: number
   fuelType: string
@@ -30,11 +31,12 @@ interface CachedValuation {
 
 /**
  * Generate a cache key for a vehicle valuation
- * Key considers: brand, model, year ±1, mileage ±10%, fuelType
+ * Key considers: brand, model, variant, year ±1, mileage ±10%, fuelType
  */
 export function generateCacheKey(input: CacheKey): string {
   const normalizedBrand = input.brand.trim().toLowerCase()
   const normalizedModel = input.model.trim().toLowerCase()
+  const normalizedVariant = input.variant ? input.variant.trim().toLowerCase() : 'base'
   const normalizedFuel = input.fuelType.trim().toLowerCase()
 
   // Round year to nearest value (allows ±1 year matching)
@@ -43,7 +45,7 @@ export function generateCacheKey(input: CacheKey): string {
   // Round mileage to nearest 10% bucket (e.g., 50000 -> 50k bucket)
   const mileageBucket = Math.round(input.mileage / 10000) * 10000
 
-  return `${normalizedBrand}:${normalizedModel}:${yearKey}:${mileageBucket}:${normalizedFuel}`
+  return `${normalizedBrand}:${normalizedModel}:${normalizedVariant}:${yearKey}:${mileageBucket}:${normalizedFuel}`
 }
 
 /**
