@@ -3,7 +3,7 @@
 import { Suspense, useEffect, useState, useCallback, useRef } from "react"
 import { useSearchParams } from "next/navigation"
 import Link from "next/link"
-import { Car, CheckCircle, Phone, Mail, Loader2, Search, Calculator, FileCheck, TrendingUp, Printer, Send, Download, Image as ImageIcon, FileText } from "lucide-react"
+import { Car, CheckCircle, Phone, Mail, Loader2, Search, Calculator, FileCheck, TrendingUp, Printer, Send, Download, Image as ImageIcon, FileText, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "sonner"
@@ -53,6 +53,7 @@ function SuccessContent() {
   const [currentStep, setCurrentStep] = useState(1)
   const [valuationComplete, setValuationComplete] = useState(false)
   const [sendingEmail, setSendingEmail] = useState(false)
+  const [rerunning, setRerunning] = useState(false)
   const printRef = useRef<HTMLDivElement>(null)
 
   const fetchSubmission = useCallback(async () => {
@@ -244,6 +245,40 @@ function SuccessContent() {
       toast.error("Fehler beim Senden der E-Mail")
     } finally {
       setSendingEmail(false)
+    }
+  }
+
+  const handleRerunValuation = async () => {
+    if (!submissionId) {
+      toast.error("Keine Submission ID vorhanden")
+      return
+    }
+
+    setRerunning(true)
+    toast.loading("Bewertung wird neu berechnet...")
+
+    try {
+      const response = await fetch('/api/valuations/rerun', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ submissionId })
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to rerun valuation')
+      }
+
+      const data = await response.json()
+      setSubmission(data.submission)
+      toast.success("Bewertung wurde erfolgreich aktualisiert!")
+    } catch (error) {
+      console.error('Error rerunning valuation:', error)
+      toast.error("Fehler beim Aktualisieren der Bewertung")
+    } finally {
+      setRerunning(false)
+      toast.dismiss()
     }
   }
 
@@ -869,6 +904,21 @@ function SuccessContent() {
                         <Send className="h-4 w-4" />
                       )}
                       <span>{sendingEmail ? "Wird gesendet..." : "Per E-Mail senden"}</span>
+                    </Button>
+                  </div>
+                  <div className="mt-3">
+                    <Button
+                      variant="outline"
+                      className="w-full h-11 gap-2"
+                      onClick={handleRerunValuation}
+                      disabled={rerunning}
+                    >
+                      {rerunning ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <RefreshCw className="h-4 w-4" />
+                      )}
+                      <span>{rerunning ? "Bewertung wird aktualisiert..." : "Bewertung neu berechnen"}</span>
                     </Button>
                   </div>
                   <p className="text-xs text-gray-400 text-center mt-3">
