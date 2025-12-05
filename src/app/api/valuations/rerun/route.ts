@@ -27,25 +27,32 @@ export async function POST(request: NextRequest) {
 
     console.log(`🔄 Rerunning valuation for submission: ${submissionId}`)
 
+    // Helper function to format date to MM/YYYY
+    const formatDateToMMYYYY = (date: Date | null): string | undefined => {
+      if (!date) return undefined
+      const month = String(date.getMonth() + 1).padStart(2, '0')
+      const year = date.getFullYear()
+      return `${month}/${year}`
+    }
+
     // Run the valuation again with the existing vehicle data
     const valuationResult = await getCarValuation({
       brand: submission.brand,
       model: submission.model,
-      variant: submission.variant,
+      variant: submission.variant ?? undefined,
       year: submission.year,
       mileage: submission.mileage,
       fuelType: submission.fuelType,
       condition: submission.condition,
-      transmission: submission.transmission,
-      bodyType: submission.bodyType,
-      driveType: submission.driveType,
-      enginePower: submission.enginePower,
-      firstRegistration: submission.firstRegistration,
-      mfkDate: submission.mfkDate,
-      previousOwners: submission.previousOwners,
+      transmission: submission.transmission ?? undefined,
+      bodyType: submission.bodyType ?? undefined,
+      driveType: submission.driveType ?? undefined,
+      enginePower: submission.enginePower ?? undefined,
+      mfkDate: formatDateToMMYYYY(submission.mfkDate),
+      previousOwners: submission.previousOwners ?? undefined,
       accidentFree: submission.accidentFree,
-      serviceHistory: submission.serviceHistory,
-      exteriorColor: submission.exteriorColor,
+      serviceHistory: submission.serviceHistory ?? undefined,
+      exteriorColor: submission.exteriorColor ?? undefined,
       equipment: submission.equipment as string[]
     })
 
