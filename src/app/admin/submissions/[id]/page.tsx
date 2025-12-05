@@ -87,6 +87,15 @@ interface Submission {
   aiListings: Listing[] | null
   aiConfidence: string | null
   aiReasoning: string | null
+  aiListingsMetadata: {
+    totalListings: number
+    extractedFields: {
+      priceExtracted: number
+      mileageExtracted: number
+      yearExtracted: number
+    }
+    qualityScore: number
+  } | null
   notes: string | null
   finalOfferPrice: number | null
   vehicleImages: VehicleImage[]
