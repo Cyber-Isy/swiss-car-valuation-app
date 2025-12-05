@@ -132,6 +132,19 @@ export async function getCarValuation(input: ValuationInput): Promise<ValuationR
     serviceLabel && `Service: ${serviceLabel}`
   ].filter(Boolean).join(' | ')
 
+  // Detect if user is searching for a premium/performance variant
+  const isPremiumVariant = sanitizedVariant && /GTI|AMG|M-Sport|M Sport|RS\d|ST|R-Line|Type R|Si|WRX|STI|Turbo S|GTS|Nismo|N Line/i.test(sanitizedVariant)
+
+  // Build exclusion rule based on search intent
+  let exclusionRule = ''
+  if (isPremiumVariant) {
+    // User wants a performance model - only exclude higher-tier variants
+    exclusionRule = `NUR ${vehicleDesc} - KEINE anderen Varianten (z.B. ${sanitizedVariant} ja, aber nicht Clubsport/Performance/Plus)`
+  } else {
+    // User wants base model - exclude all performance variants
+    exclusionRule = `KEINE Premium-Varianten (AMG, M-Sport, RS, GTI, R-Line, Type R, etc.)`
+  }
+
   const prompt = `Suchen Sie vergleichbare Inserate auf Schweizer Marktplätzen für: ${specs}
 
 SUCHKRITERIEN:
@@ -139,7 +152,7 @@ Exakte Suche: Jahrgang ${minYear}-${maxYear}, Km ${minMileage.toLocaleString()}-
 Ähnliche Suche (falls keine exakten Treffer): ±3 Jahre, ±50'000 km
 
 NUR Schweizer Marktplätze: AutoScout24.ch, Comparis.ch, tutti.ch, autolina.ch
-KEINE Premium-Varianten (AMG, M-Sport, RS, GTI Clubsport, etc.)
+${exclusionRule}
 
 Antworten Sie NUR mit JSON:
 {
@@ -204,6 +217,11 @@ Falls keine Treffer: "Derzeit sind keine vergleichbaren Fahrzeuge auf dem Schwei
       // Got search results! Now use Sonar to analyze them
       console.log('✅ Search results found, using Sonar to analyze...')
 
+      // Build variant matching instruction
+      const variantMatchRule = sanitizedVariant
+        ? `- NUR Inserate die EXAKT "${sanitizedVariant}" im Titel enthalten (z.B. "Golf GTI" ja, "Golf 1.0 TSI" nein)`
+        : `- Keine Premium-Varianten (GTI, AMG, RS, M-Sport, etc.)`
+
       const analysisPrompt = `Analysiere diese ${searchData.results.length} Inserate für ${vehicleDesc} (${input.year}):
 
 ${searchData.results.map((r: any, i: number) => `[${i}] ${r.title}
@@ -220,6 +238,7 @@ VALIDIERUNG:
 - Jahrgang muss zwischen ${minYear} und ${maxYear} liegen
 - Kilometerstand muss zwischen ${minMileage.toLocaleString()} und ${maxMileage.toLocaleString()} km liegen
 - Ignoriere Inserate ohne Preis oder mit unrealistischen Preisen (<1000 CHF oder >200000 CHF)
+${variantMatchRule}
 
 Antworte NUR mit diesem JSON (OHNE zusätzlichen Text):
 {
