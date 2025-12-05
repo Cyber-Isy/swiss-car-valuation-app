@@ -44,6 +44,8 @@ interface ValuationResult {
 }
 
 export async function getCarValuation(input: ValuationInput): Promise<ValuationResult> {
+  console.log('🚀 Starting AI valuation for:', input.brand, input.model, input.variant)
+
   // Calculate acceptable ranges for filtering
   const minYear = input.year - 2
   const maxYear = input.year + 2
@@ -139,6 +141,152 @@ REASONING BEISPIELE (auf formelles Deutsch):
 
 Bei "none" (keine Treffer): market_value, price_range und purchase_price müssen null sein.`
 
+  // Try Search API first (raw search results)
+  console.log('📡 Trying Perplexity Search API (/search endpoint)...')
+  const startTime = Date.now()
+
+  const searchQuery = `${vehicleDesc} ${input.year} ${input.mileage} km ${transmissionLabel || ''} site:autoscout24.ch OR site:comparis.ch OR site:tutti.ch OR site:autolina.ch OR site:anibis.ch OR site:car4you.ch`
+
+  const searchResponse = await fetch('https://api.perplexity.ai/search', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${process.env.PERPLEXITY_API_KEY}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      query: searchQuery,
+      max_results: 20,
+      search_domain_filter: [
+        'autoscout24.ch',
+        'comparis.ch',
+        'tutti.ch',
+        'autolina.ch',
+        'anibis.ch',
+        'car4you.ch'
+      ],
+      search_recency_filter: 'month',
+      country: 'CH'
+    })
+  })
+
+  const searchElapsed = Date.now() - startTime
+  console.log(`⏱️  Search API responded in ${searchElapsed}ms with status ${searchResponse.status}`)
+
+  if (searchResponse.ok) {
+    const searchData = await searchResponse.json()
+    console.log(`📥 Search API returned ${searchData.results?.length || 0} results`)
+
+    if (searchData.results && searchData.results.length > 0) {
+      // Got search results! Now use Sonar to analyze them
+      console.log('✅ Search results found, using Sonar to analyze...')
+
+      const analysisPrompt = `Analysiere diese ${searchData.results.length} Suchergebnisse für ${vehicleDesc} (${input.year}, ${input.mileage} km):
+
+SUCHERGEBNISSE:
+${searchData.results.map((r: any, i: number) => `
+${i + 1}. ${r.title}
+   URL: ${r.url}
+   Snippet: ${r.snippet}
+   Datum: ${r.date || r.last_updated || 'Unbekannt'}
+`).join('\n')}
+
+Extrahiere alle Preise (CHF) aus den Titeln und Snippets und berechne:
+1. Durchschnittspreis (market_value)
+2. Preisspanne (price_range: min und max)
+3. Ankaufspreis (purchase_price = market_value * 0.85)
+
+WICHTIG: Antworte NUR mit diesem exakten JSON-Format, ohne zusätzlichen Text:
+
+{
+  "search_type": "exact",
+  "market_value": <Durchschnittspreis als Ganzzahl>,
+  "price_range": {
+    "min": <niedrigster Preis>,
+    "max": <höchster Preis>
+  },
+  "listings_found": ${searchData.results.length},
+  "purchase_price": <market_value mal 0.85>,
+  "confidence": "high",
+  "listings": [],
+  "reasoning": "Basierend auf ${searchData.results.length} Suchergebnissen von Schweizer Marktplätzen (${searchData.results.map((r: any) => new URL(r.url).hostname).filter((v: string, i: number, a: string[]) => a.indexOf(v) === i).join(', ')})."
+}`
+
+      const response = await fetch('https://api.perplexity.ai/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.PERPLEXITY_API_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'sonar-pro',
+          messages: [
+            {
+              role: 'system',
+              content: 'Sie sind ein Experte für Fahrzeugbewertungen. Extrahieren Sie Preise aus den bereitgestellten Suchergebnissen und berechnen Sie Durchschnittswerte. Antworten Sie AUSSCHLIESSLICH mit gültigem JSON ohne zusätzlichen Text oder Erklärungen.'
+            },
+            {
+              role: 'user',
+              content: analysisPrompt
+            }
+          ],
+          temperature: 0.1,
+          max_tokens: 2000,
+          disable_search: true
+        })
+      })
+
+      const analysisElapsed = Date.now() - startTime
+      console.log(`⏱️  Analysis completed in ${analysisElapsed}ms total`)
+
+      if (!response.ok) {
+        const errorBody = await response.text()
+        console.error('❌ Analysis API error:', errorBody)
+        throw new Error(`Analysis API error: ${response.status}`)
+      }
+
+      const data = await response.json()
+      const content = data.choices[0]?.message?.content
+      console.log('📥 Analysis response:', content?.substring(0, 200) + '...')
+
+      if (!content) {
+        throw new Error('No analysis response')
+      }
+
+      // Continue with existing parsing logic...
+      const jsonMatch = content.match(/\{[\s\S]*\}/)
+      if (!jsonMatch) {
+        throw new Error('No JSON found in analysis response')
+      }
+
+      const parsed = JSON.parse(jsonMatch[0])
+      const listings = parsed.listings || []
+      const searchType = parsed.search_type || (listings.length > 0 ? 'exact' : 'similar')
+
+      return {
+        marketValue: parsed.market_value,
+        priceMin: parsed.price_range?.min || (parsed.market_value ? parsed.market_value * 0.9 : null),
+        priceMax: parsed.price_range?.max || (parsed.market_value ? parsed.market_value * 1.1 : null),
+        purchasePrice: parsed.purchase_price,
+        listingsCount: parsed.listings_found || searchData.results.length || 0,
+        sources: searchData.results.map((r: any) => new URL(r.url).hostname).filter((v: string, i: number, a: string[]) => a.indexOf(v) === i),
+        listings: searchData.results.slice(0, 5).map((r: any) => ({
+          url: r.url,
+          title: r.title,
+          price: 0, // Will be extracted by analysis
+          mileage: input.mileage,
+          year: input.year,
+          source: new URL(r.url).hostname
+        })),
+        confidence: listings.length > 5 ? 'high' : listings.length > 2 ? 'medium' : 'low',
+        reasoning: parsed.reasoning || `Basierend auf ${searchData.results.length} Suchergebnissen von Schweizer Marktplätzen.`,
+        searchType
+      }
+    }
+  }
+
+  // Fallback to original Sonar chat completions if Search API fails
+  console.log('⚠️  Search API returned no results, falling back to Sonar chat...')
+
   const response = await fetch('https://api.perplexity.ai/chat/completions', {
     method: 'POST',
     headers: {
@@ -157,19 +305,39 @@ Bei "none" (keine Treffer): market_value, price_range und purchase_price müssen
           content: prompt
         }
       ],
-      temperature: 0.1,
-      max_tokens: 2000
+      temperature: 0.2,
+      max_tokens: 2000,
+      search_domain_filter: [
+        'autoscout24.ch',
+        'comparis.ch',
+        'tutti.ch',
+        'autolina.ch',
+        'anibis.ch',
+        'car4you.ch'
+      ],
+      search_recency_filter: 'month',
+      return_images: true,
+      return_related_questions: false,
+      enable_search_classifier: true,
+      web_search_options: {
+        search_context_size: 'high'
+      }
     })
   })
 
+  const elapsed = Date.now() - startTime
+  console.log(`⏱️  Perplexity API responded in ${elapsed}ms with status ${response.status}`)
+
   if (!response.ok) {
     const errorBody = await response.text()
-    console.error('Perplexity API error details:', errorBody)
+    console.error('❌ Perplexity API error details:', errorBody)
     throw new Error(`Perplexity API error: ${response.status} - ${errorBody}`)
   }
 
   const data = await response.json()
   const content = data.choices[0]?.message?.content
+
+  console.log('📥 Perplexity raw response:', content?.substring(0, 200) + '...')
 
   if (!content) {
     throw new Error('No response from Perplexity API')
@@ -192,6 +360,7 @@ Bei "none" (keine Treffer): market_value, price_range und purchase_price müssen
 
     // Handle no listings found scenario
     if (searchType === 'none' || listings.length === 0) {
+      console.log('⚠️  No listings found. Reasoning:', parsed.reasoning)
       return {
         marketValue: null,
         priceMin: null,
@@ -206,6 +375,7 @@ Bei "none" (keine Treffer): market_value, price_range und purchase_price müssen
       }
     }
 
+    console.log('✅ Valuation completed:', { marketValue: parsed.market_value, listingsCount: listings.length, confidence: parsed.confidence })
     return {
       marketValue: parsed.market_value,
       priceMin: parsed.price_range?.min || (parsed.market_value ? parsed.market_value * 0.9 : null),
